@@ -35,3 +35,6 @@ cargo-husky = "1.5.0"
 git_info = "0.1.2"
 version-sync = "0.9.3"
 wasm-bindgen-test = "0.3.28"
+
+[dependencies]
+pretty-type-name = "1.0.0"

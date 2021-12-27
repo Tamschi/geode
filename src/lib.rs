@@ -9,3 +9,38 @@
 #[cfg(doctest)]
 #[doc = include_str!("../README.md")]
 mod readme {}
+
+pub mod iterators;
+pub mod thread_safety;
+
+//TODO: Macro to generate a custom list type with optional Cons and RCons implementations.
+//TODO: Macro to privately implement iteration.
+
+/// A dynamic dispatch iteration target.
+///
+/// # Safety
+///
+/// For each marker trait that `Self` implements, the target of the [`dyn IterateeMut<T>`](`IterateeMut`) [reference](https://doc.rust-lang.org/stable/core/primitive.reference.html) returned from [`IterateeMut::head_rest_mut`] must implement it too.
+pub unsafe trait Iteratee<T: ?Sized> {
+	/// Returns the first item reference, if available, and "rest of the sequence"-iteratee.
+	fn head_rest(&self) -> (Option<&T>, &dyn Iteratee<T>);
+
+	/// Used to implement [`Iterator::size_hint`] on [`iterators::Iter`] and [`iterators::IterMut`].
+	fn size_hint(&self) -> (usize, Option<usize>);
+}
+
+/// A target for mutating dynamic dispatch iteration.
+///
+/// # Safety
+///
+/// For each marker trait that `Self` implements,
+///
+/// * the target of the [`&dyn IterateeMut<T>`](`IterateeMut`) returned from [`IterateeMut::head_rest_mut`] must implement it too and
+/// * the target of the [`dyn Iteratee<T>`](`Iteratee`) [reference](https://doc.rust-lang.org/stable/core/primitive.reference.html) returned from [`IterateeMut::as_iteratee`] must implement it too.
+pub unsafe trait IterateeMut<T: ?Sized>: Iteratee<T> {
+	/// Returns the first item reference, if available, and "rest of the sequence"-iteratee.
+	fn head_rest_mut(&mut self) -> (Option<&mut T>, &mut dyn IterateeMut<T>);
+
+	/// Borrows this instance as shared [`Iteratee<T>`];
+	fn as_iteratee(&self) -> &dyn Iteratee<T>;
+}
