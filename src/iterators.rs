@@ -2,7 +2,10 @@
 
 use crate::{DynIteratee, DynIterateeMut, Iteratee, IterateeMut};
 use pretty_type_name::pretty_type_name;
-use std::fmt::{self, Debug, Formatter};
+use std::{
+	fmt::{self, Debug, Formatter},
+	mem,
+};
 
 /// A dynamic dispatch iterator.
 #[derive(Clone)]
@@ -41,7 +44,7 @@ impl<I: DynIterateeMut> IterMut<I> {
 	/// Creates an [`Iter`] advancing independently of this one.
 	#[must_use]
 	pub fn fork_shared(&self) -> Iter<I::DynIteratee> {
-		Iter::new(self.iteratee.into_dyn_iteratee_impl())
+		Iter::new(self.iteratee.as_mut().as_iteratee())
 	}
 }
 
@@ -50,8 +53,10 @@ impl<I: DynIteratee> Iterator for Iter<I> {
 
 	fn next(&mut self) -> Option<Self::Item> {
 		let (head, rest) = self.iteratee.as_ref().head_rest();
-		self.iteratee = rest;
-		head
+		unsafe {
+			self.iteratee = mem::transmute(rest);
+			mem::transmute(head)
+		}
 	}
 }
 
@@ -59,7 +64,7 @@ impl<I: DynIterateeMut> Iterator for IterMut<I> {
 	type Item = I::Item;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		let iteratee = &mut self.iteratee as *mut &mut I;
+		let iteratee = &mut self.iteratee as *mut I;
 		unsafe {
 			//SAFETY:
 			// `IterateeMut::head_rest_mut` may not leak references if it panics, and must still be in a memory-safe state too.
@@ -67,9 +72,11 @@ impl<I: DynIterateeMut> Iterator for IterMut<I> {
 			//
 			// Iff `head_rest_mut` returns, the target of `self.iteratee` may be borrowed through head for longer than `'_`,
 			// but we can replace it with `rest` whose target is guaranteed to be disjoint (as far as pointer restrictions go).
-			let (head, rest) = iteratee.read().head_rest_mut();
-			iteratee.write(rest);
-			head
+			//
+			// TODO: Safety notes on the transmutes below.
+			let (head, rest) = iteratee.read().as_mut().head_rest_mut();
+			iteratee.write(mem::transmute(rest));
+			mem::transmute(head)
 		}
 	}
 }

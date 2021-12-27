@@ -73,7 +73,7 @@ mod private {
 		type Item: DerefMut;
 		type DynIteratee: DynIteratee;
 
-		fn into_dyn_iteratee_impl(self) -> Self::DynIteratee;
+		fn into_dyn_iteratee(self) -> Self::DynIteratee;
 
 		fn as_mut(&mut self) -> &mut dyn IterateeMut<<Self::Item as Deref>::Target>;
 	}
@@ -81,7 +81,7 @@ mod private {
 		type Item = &'a mut T;
 		type DynIteratee = &'a dyn Iteratee<T>;
 
-		fn into_dyn_iteratee_impl(self) -> Self::DynIteratee {
+		fn into_dyn_iteratee(self) -> Self::DynIteratee {
 			self.as_iteratee()
 		}
 
