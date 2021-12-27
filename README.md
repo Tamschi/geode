@@ -1,29 +1,29 @@
-# TODO_CRATE_NAME
+# geode
 
-[![Lib.rs](https://img.shields.io/badge/Lib.rs-*-84f)](https://lib.rs/crates/TODO_CRATE_NAME)
-[![Crates.io](https://img.shields.io/crates/v/TODO_CRATE_NAME)](https://crates.io/crates/TODO_CRATE_NAME)
-[![Docs.rs](https://docs.rs/TODO_CRATE_NAME/badge.svg)](https://docs.rs/TODO_CRATE_NAME)
+[![Lib.rs](https://img.shields.io/badge/Lib.rs-*-84f)](https://lib.rs/crates/geode)
+[![Crates.io](https://img.shields.io/crates/v/geode)](https://crates.io/crates/geode)
+[![Docs.rs](https://docs.rs/geode/badge.svg)](https://docs.rs/geode)
 
 ![Rust 1.54](https://img.shields.io/static/v1?logo=Rust&label=&message=1.54&color=grey)
-[![CI](https://github.com/Tamschi/TODO_CRATE_NAME/workflows/CI/badge.svg?branch=develop)](https://github.com/Tamschi/TODO_CRATE_NAME/actions?query=workflow%3ACI+branch%3Adevelop)
-![Crates.io - License](https://img.shields.io/crates/l/TODO_CRATE_NAME/0.0.1)
+[![CI](https://github.com/Tamschi/geode/workflows/CI/badge.svg?branch=develop)](https://github.com/Tamschi/geode/actions?query=workflow%3ACI+branch%3Adevelop)
+![Crates.io - License](https://img.shields.io/crates/l/geode/0.0.1)
 
-[![GitHub](https://img.shields.io/static/v1?logo=GitHub&label=&message=%20&color=grey)](https://github.com/Tamschi/TODO_CRATE_NAME)
-[![open issues](https://img.shields.io/github/issues-raw/Tamschi/TODO_CRATE_NAME)](https://github.com/Tamschi/TODO_CRATE_NAME/issues)
-[![open pull requests](https://img.shields.io/github/issues-pr-raw/Tamschi/TODO_CRATE_NAME)](https://github.com/Tamschi/TODO_CRATE_NAME/pulls)
-[![good first issues](https://img.shields.io/github/issues-raw/Tamschi/TODO_CRATE_NAME/good%20first%20issue?label=good+first+issues)](https://github.com/Tamschi/TODO_CRATE_NAME/contribute)
+[![GitHub](https://img.shields.io/static/v1?logo=GitHub&label=&message=%20&color=grey)](https://github.com/Tamschi/geode)
+[![open issues](https://img.shields.io/github/issues-raw/Tamschi/geode)](https://github.com/Tamschi/geode/issues)
+[![open pull requests](https://img.shields.io/github/issues-pr-raw/Tamschi/geode)](https://github.com/Tamschi/geode/pulls)
+[![good first issues](https://img.shields.io/github/issues-raw/Tamschi/geode/good%20first%20issue?label=good+first+issues)](https://github.com/Tamschi/geode/contribute)
 
-[![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/TODO_CRATE_NAME.svg)](https://web.crev.dev/rust-reviews/crate/TODO_CRATE_NAME/)
-[![Zulip Chat](https://img.shields.io/endpoint?label=chat&url=https%3A%2F%2Fiteration-square-automation.schichler.dev%2F.netlify%2Ffunctions%2Fstream_subscribers_shield%3Fstream%3Dproject%252FTODO_CRATE_NAME)](https://iteration-square.schichler.dev/#narrow/stream/project.2FTODO_CRATE_NAME)
+[![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/geode.svg)](https://web.crev.dev/rust-reviews/crate/geode/)
+[![Zulip Chat](https://img.shields.io/endpoint?label=chat&url=https%3A%2F%2Fiteration-square-automation.schichler.dev%2F.netlify%2Ffunctions%2Fstream_subscribers_shield%3Fstream%3Dproject%252Fgeode)](https://iteration-square.schichler.dev/#narrow/stream/project.2Fgeode)
 
-TODO_README_DESCRIPTION
+Zero-runtime-cost heterogeneous lists.
 
 ## Installation
 
 Please use [cargo-edit](https://crates.io/crates/cargo-edit) to always add the latest version of this library:
 
 ```cmd
-cargo add TODO_CRATE_NAME
+cargo add geode
 ```
 
 ## Example
@@ -57,7 +57,7 @@ See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 ## Versioning
 
-`TODO_CRATE_NAME` strictly follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) with the following exceptions:
+`geode` strictly follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) with the following exceptions:
 
 - The minor version will not reset to 0 on major version changes (except for v1).  
 Consider it the global feature level.
