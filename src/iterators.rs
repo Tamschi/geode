@@ -1,92 +1,62 @@
 //! Concrete iterator types.
 
-use std::{
-	fmt::{self, Debug, Formatter},
-	marker::PhantomData,
-	panic::{RefUnwindSafe, UnwindSafe},
-};
-
+use crate::{DynIteratee, DynIterateeMut, Iteratee, IterateeMut};
 use pretty_type_name::pretty_type_name;
-
-use crate::{Iteratee, IterateeMut};
-
-/// Similar to [`PhantomData`] but implements all markers unconditionally.
-///
-/// We don't have to care about them on `T` in [`Iter`] and [`IterMut`] because relevant constraints are already inherited through `I`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct PhantomUse<T: ?Sized>(PhantomData<T>);
-unsafe impl<T: ?Sized> Send for PhantomUse<T> {}
-unsafe impl<T: ?Sized> Sync for PhantomUse<T> {}
-impl<T: ?Sized> UnwindSafe for PhantomUse<T> {}
-impl<T: ?Sized> RefUnwindSafe for PhantomUse<T> {}
-impl<T: ?Sized> Unpin for PhantomUse<T> {}
-impl<T: ?Sized> PhantomUse<T> {
-	pub fn new() -> Self {
-		Self(PhantomData)
-	}
-}
+use std::fmt::{self, Debug, Formatter};
 
 /// A dynamic dispatch iterator.
 #[derive(Clone)]
-pub struct Iter<'a, T: ?Sized, I: ?Sized + Iteratee<T>> {
-	iteratee: &'a I,
-	_phantom: PhantomUse<&'a T>,
+pub struct Iter<I: DynIteratee> {
+	iteratee: I,
 }
 
-impl<'a, T: ?Sized, I: ?Sized + Iteratee<T>> Iter<'a, T, I> {
+impl<I: DynIteratee> Iter<I> {
 	/// Creates a new instance of [`Iter`] targeting the given [`Iteratee`].
 	#[must_use]
-	pub fn new(iteratee: &'a I) -> Self {
-		Self {
-			iteratee,
-			_phantom: PhantomUse::new(),
-		}
+	pub fn new(iteratee: I) -> Self {
+		Self { iteratee }
 	}
 }
 
 /// A mutating dynamic dispatch iterator.
 ///
 /// Note that this type is downgradeable into a [`Clone`] [`Iter`] via [`From`]/[`Into`] conversion.
-pub struct IterMut<'a, T: ?Sized, I: ?Sized + IterateeMut<T>> {
-	iteratee: &'a mut I,
-	_phantom: PhantomUse<&'a T>,
+pub struct IterMut<I: DynIterateeMut> {
+	iteratee: I,
 }
 
-impl<'a, T: ?Sized, I: ?Sized + IterateeMut<T>> IterMut<'a, T, I> {
+impl<I: DynIterateeMut> IterMut<I> {
 	/// Creates a new instance of [`IterMut`] targeting the given [`IterateeMut`].
 	#[must_use]
-	pub fn new(iteratee: &'a mut I) -> Self {
-		Self {
-			iteratee,
-			_phantom: PhantomUse::new(),
-		}
+	pub fn new(iteratee: I) -> Self {
+		Self { iteratee }
 	}
 
 	/// Creates a new [`IterMut`] advancing independently of this one.
 	#[must_use]
-	pub fn fork(&mut self) -> IterMut<'_, T, I> {
+	pub fn fork(&mut self) -> IterMut<I> {
 		IterMut::new(self.iteratee)
 	}
 
 	/// Creates an [`Iter`] advancing independently of this one.
 	#[must_use]
-	pub fn fork_shared(&self) -> Iter<'_, T, I> {
-		Iter::new(self.iteratee.as_iteratee())
+	pub fn fork_shared(&self) -> Iter<I::DynIteratee> {
+		Iter::new(self.iteratee.into_dyn_iteratee_impl())
 	}
 }
 
-impl<'a, T: ?Sized, I: ?Sized + Iteratee<T>> Iterator for Iter<'a, T, I> {
-	type Item = &'a T;
+impl<I: DynIteratee> Iterator for Iter<I> {
+	type Item = I::Item;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		let (head, rest) = self.iteratee.head_rest();
+		let (head, rest) = self.iteratee.as_ref().head_rest();
 		self.iteratee = rest;
 		head
 	}
 }
 
-impl<'a, T: ?Sized, I: ?Sized + IterateeMut<T>> Iterator for IterMut<'a, T, I> {
-	type Item = &'a mut T;
+impl<I: DynIterateeMut> Iterator for IterMut<I> {
+	type Item = I::Item;
 
 	fn next(&mut self) -> Option<Self::Item> {
 		let iteratee = &mut self.iteratee as *mut &mut I;
@@ -105,20 +75,20 @@ impl<'a, T: ?Sized, I: ?Sized + IterateeMut<T>> Iterator for IterMut<'a, T, I> {
 }
 
 /// Downgrades an [`IterMut`] into a ([`Clone`]) [`Iter`].
-impl<'a, T: ?Sized, I: ?Sized + IterateeMut<T>> From<IterMut<'a, T, I>> for Iter<'a, T, I> {
-	fn from(iter_mut: IterMut<'a, T, I>) -> Self {
-		Self::new(iter_mut.iteratee.as_iteratee())
+impl<I: DynIterateeMut> From<IterMut<I>> for Iter<I::DynIteratee> {
+	fn from(iter_mut: IterMut<I>) -> Self {
+		Self::new(iter_mut.iteratee.into_dyn_iteratee())
 	}
 }
 
-impl<'a, T: ?Sized, I: ?Sized + Iteratee<T>> Debug for Iter<'a, T, I> {
+impl<I: DynIteratee> Debug for Iter<I> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
 		f.debug_struct(&pretty_type_name::<Self>())
 			.finish_non_exhaustive()
 	}
 }
 
-impl<'a, T: ?Sized, I: ?Sized + IterateeMut<T>> Debug for IterMut<'a, T, I> {
+impl<I: DynIterateeMut> Debug for IterMut<I> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
 		f.debug_struct(&pretty_type_name::<Self>())
 			.finish_non_exhaustive()

@@ -44,3 +44,55 @@ pub unsafe trait IterateeMut<T: ?Sized>: Iteratee<T> {
 	/// Borrows this instance as shared [`Iteratee<T>`];
 	fn as_iteratee(&self) -> &dyn Iteratee<T>;
 }
+
+mod private {
+	use std::ops::{Deref, DerefMut};
+
+	use crate::{DynIteratee, Iteratee, IterateeMut};
+
+	pub trait Sealed {}
+	impl<T: ?Sized> Sealed for &dyn Iteratee<T> {}
+	impl<T: ?Sized> Sealed for &mut dyn IterateeMut<T> {}
+
+	#[doc(hidden)]
+	pub trait DynIterateeImpl {
+		type Item: Deref;
+
+		fn as_ref(&self) -> &dyn Iteratee<<Self::Item as Deref>::Target>;
+	}
+	impl<'a, T: ?Sized> DynIterateeImpl for &'a dyn Iteratee<T> {
+		type Item = &'a T;
+
+		fn as_ref(&self) -> &dyn Iteratee<<Self::Item as Deref>::Target> {
+			*self
+		}
+	}
+
+	#[doc(hidden)]
+	pub trait DynIterateeMutImpl {
+		type Item: DerefMut;
+		type DynIteratee: DynIteratee;
+
+		fn into_dyn_iteratee_impl(self) -> Self::DynIteratee;
+
+		fn as_mut(&mut self) -> &mut dyn IterateeMut<<Self::Item as Deref>::Target>;
+	}
+	impl<'a, T: ?Sized> DynIterateeMutImpl for &'a mut dyn IterateeMut<T> {
+		type Item = &'a mut T;
+		type DynIteratee = &'a dyn Iteratee<T>;
+
+		fn into_dyn_iteratee_impl(self) -> Self::DynIteratee {
+			self.as_iteratee()
+		}
+
+		fn as_mut(&mut self) -> &mut dyn IterateeMut<<Self::Item as Deref>::Target> {
+			*self
+		}
+	}
+}
+use private::{DynIterateeImpl, DynIterateeMutImpl, Sealed};
+
+pub trait DynIteratee: Sealed + DynIterateeImpl {}
+impl<T: ?Sized> DynIteratee for &dyn Iteratee<T> {}
+pub trait DynIterateeMut: Sealed + DynIterateeMutImpl {}
+impl<T: ?Sized> DynIterateeMut for &mut dyn IterateeMut<T> {}
