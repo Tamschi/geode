@@ -1,12 +1,12 @@
 //! Concrete iterator types.
 
 use crate::{DynIteratee, DynIterateeMut, Iteratee, IterateeMut};
-use pretty_type_name::pretty_type_name;
 use core::{
 	fmt::{self, Debug, Formatter},
 	marker::PhantomData,
 	mem,
 };
+use pretty_type_name::pretty_type_name;
 
 /// A dynamic dispatch iterator.
 #[derive(Clone)]
